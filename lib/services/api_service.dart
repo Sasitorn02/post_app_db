@@ -1,9 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class ApiService {
   final String baseUrl =
-      'https://apinodedb-xzpy.onrender.com/api/'; // URL ของ RESTful API
+      'https://apinodedb-1-sen4.onrender.com/api/'; // URL ของ RESTful API
 
   Future<Map<String, dynamic>?> login(String email, String password) async {
     final response = await http.post(
@@ -19,15 +20,26 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>?> signup(
-      String username, String email, String password) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/users'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(
-          {'username': username, 'email': email, 'password': password}),
-    );
+      String username, String email, String password, File? image) async {
+    var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/users'));
+    request.headers['Content-Type'] = 'application/json';
+
+    // เพิ่มข้อมูลที่จำเป็น
+    request.fields['username'] = username;
+    request.fields['email'] = email;
+    request.fields['password'] = password;
+
+    // ถ้ามีภาพโปรไฟล์ ให้เพิ่มลงใน request
+    if (image != null) {
+      request.files
+          .add(await http.MultipartFile.fromPath('profile_image', image.path));
+    }
+
+    final response = await request.send();
+
     if (response.statusCode == 201) {
-      return jsonDecode(response.body);
+      final responseData = await response.stream.toBytes();
+      return jsonDecode(String.fromCharCodes(responseData));
     }
     return null;
   }
