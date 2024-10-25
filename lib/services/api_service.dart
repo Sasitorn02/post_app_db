@@ -22,7 +22,6 @@ class ApiService {
   Future<Map<String, dynamic>?> signup(
       String username, String email, String password, File? image) async {
     var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/users'));
-    request.headers['Content-Type'] = 'application/json';
 
     // เพิ่มข้อมูลที่จำเป็น
     request.fields['username'] = username;
